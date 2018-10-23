@@ -516,7 +516,7 @@ void HandleVDM(const tNMEA0183Msg &NMEA0183Msg) {
 	unsigned int seqMessageId;
 	char channel; 
 	unsigned int length;
-	char buf[60];
+	char bitstream[60];
 	unsigned int fillBits;
 
 	uint8_t msgType;
@@ -538,35 +538,51 @@ void HandleVDM(const tNMEA0183Msg &NMEA0183Msg) {
 
 	length = 40;
 
-	if (NMEA0183ParseVDM_nc(NMEA0183Msg, pkgCnt, pkgNmb, seqMessageId, channel, length, buf, fillBits)) {
+	if (NMEA0183ParseVDM_nc(NMEA0183Msg, pkgCnt, pkgNmb, seqMessageId, channel, length, bitstream, fillBits)) {
 		if (NMEA0183HandlersDebugStream != 0) {
-			//			NMEA0183HandlersDebugStream->print("pkgCnt="); NMEA0183HandlersDebugStream->println(pkgCnt);
-			//			NMEA0183HandlersDebugStream->print("pkgNmb="); NMEA0183HandlersDebugStream->println(pkgNmb);
-			//			NMEA0183HandlersDebugStream->print("seqMessageId="); NMEA0183HandlersDebugStream->println(seqMessageId);
-			//			NMEA0183HandlersDebugStream->print("channel="); NMEA0183HandlersDebugStream->println(channel);
-			//			NMEA0183HandlersDebugStream->print("length="); NMEA0183HandlersDebugStream->println(length);
-			NMEA0183HandlersDebugStream->print("bitstream="); NMEA0183HandlersDebugStream->println(buf);
-			//			NMEA0183HandlersDebugStream->print("fillBits="); NMEA0183HandlersDebugStream->println(fillBits);
+			// NMEA0183HandlersDebugStream->print("pkgCnt="); NMEA0183HandlersDebugStream->println(pkgCnt);
+			// NMEA0183HandlersDebugStream->print("pkgNmb="); NMEA0183HandlersDebugStream->println(pkgNmb);
+			// NMEA0183HandlersDebugStream->print("seqMessageId="); NMEA0183HandlersDebugStream->println(seqMessageId);
+			// NMEA0183HandlersDebugStream->print("channel="); NMEA0183HandlersDebugStream->println(channel);
+			// NMEA0183HandlersDebugStream->print("length="); NMEA0183HandlersDebugStream->println(length);
+			// NMEA0183HandlersDebugStream->print("bitstream="); NMEA0183HandlersDebugStream->println(bitstream);
+			// NMEA0183HandlersDebugStream->print("fillBits="); NMEA0183HandlersDebugStream->println(fillBits);
 		}
 
 		/*
-		VDM			129038 AIS Class A Position Report			AIS VHF messages 1, 2 and 3
-					129039 AIS Class B Position Report			AIS VHF message 18
-					129040 AIS Class B Extended Position Report	AIS VHF message 19
-					129041 AIS Aids to Navigation (AtoN) Report	AIS VHF message 21
-					129793 AIS UTC and Date Report				AIS VHF messages 4 and 11
-					129794 AIS Class A Static+Voyage Rel Data	AIS VHF message 5
-					129798 AIS SAR Aircraft Position Report		AIS VHF message 9
-					129809 AIS Class B "CS" Static Data, Part A	AIS VHF message 24
-					129810 AIS Class B "CS" Static Data, Part B	AIS VHF message 24
+		VDM/VDO		*129038	AIS Class A Position Report						AIS VHF message 1
+					*129038	AIS Class A Position Report						AIS VHF message 2
+					*129038	AIS Class A Position Report						AIS VHF message 3
+					 129793	AIS UTC and Date Report							AIS VHF message 4
+					*129794	AIS Class A Static and Voyage Rel Data			AIS VHF message 5
+					 129795 AIS Addressed Binary Message					AIS VHF message 6
+					 129796 AIS Acknowledge									AIS VHF message 7
+ 					 129797 AIS Binary Broadcast Message					AIS VHF message 8
+					 129798	AIS SAR Aircraft Position Report				AIS VHF message 9
+					 129800 AIS UTC/Date Inquiry							AIS VHF message 10
+					 129793	AIS UTC and Date Report							AIS VHF message 11
+					 129801 AIS Addressed Safety Related Message			AIS VHF message 12
+							AIS	Safety related acknowledgement				AIS VHF message 13
+					 129802 AIS Safety Related Broadcast Message			AIS VHF message 14
+					 129803 AIS Interrogation								AIS VHF message 15
+					 129804 AIS Assignment Mode Command						AIS VHF message 16
+					 129792 AIS DGNSS Broadcast Binary Message				AIS VHF message 17
+					*129039	AIS Class B Position Report						AIS VHF message 18
+					 129040	AIS Class B Extended Position Report			AIS VHF message 19
+					 129805 AIS Data Link Management Message				AIS VHF message 20
+					 129041	AIS Aids to Navigation (AtoN) Report			AIS VHF message 21
+							AIS	Channel management							AIS VHF message 22
+					 129807 AIS Class B Group Assignment					AIS VHF message 23
+					*129809	AIS Class B "CS" Static Data, Part A			AIS VHF message 24
+					*129810	AIS Class B "CS" Static Data, Part B			AIS VHF message 24
+							AIS	Single slot binary message					AIS VHF message 25
+							AIS	Multiple slot binary msg with Comm State	AIS VHF message 26
+							AIS Long-Range Broadcast						AIS VHF message 27
 		*/
 
 		if (pNMEA2000 != 0) {
 			tN2kMsg N2kMsg;
-			// Multi packets not supported yet
-			if (pkgCnt != 1) return;
-
-			AIS ais_msg(buf, fillBits);
+			AIS ais_msg(bitstream, fillBits);
 
 			msgType = ais_msg.get_type();
 			msgNumeric = ais_msg.get_numeric_type();
@@ -584,66 +600,80 @@ void HandleVDM(const tNMEA0183Msg &NMEA0183Msg) {
 			navstatus = ais_msg.get_navStatus();
 //			strncpy(shipname, ais_msg.get_shipname(), 20);
 			name = ais_msg.get_shipname();
-			Serial.print("name:");
-			Serial.println(name);
+//			Serial.print("name:"); Serial.println(name);
 
-			if (NMEA0183ParseVDM_nc(NMEA0183Msg, pkgCnt, pkgNmb, seqMessageId, channel, length, buf, fillBits)) {
+			// Multi packets not supported yet
+			if (pkgCnt != 1) {
 				if (NMEA0183HandlersDebugStream != 0) {
-					//							NMEA0183HandlersDebugStream->print("msgType="); NMEA0183HandlersDebugStream->println(msgType);
-					NMEA0183HandlersDebugStream->print("msgNumeric="); NMEA0183HandlersDebugStream->println(msgNumeric);
-					//							NMEA0183HandlersDebugStream->print("repeat="); NMEA0183HandlersDebugStream->println(repeat);
-					//							NMEA0183HandlersDebugStream->print("mmsi="); NMEA0183HandlersDebugStream->println(mmsi);
-					//							NMEA0183HandlersDebugStream->print("LAT="); printDegrees(LAT);
-					//							NMEA0183HandlersDebugStream->print("LONG="); printDegrees(LONG);
-					//							NMEA0183HandlersDebugStream->print("accuracy="); NMEA0183HandlersDebugStream->println(accuracy);
-					//							NMEA0183HandlersDebugStream->print("raim="); NMEA0183HandlersDebugStream->println(raim);
-					//							NMEA0183HandlersDebugStream->print("seconds="); NMEA0183HandlersDebugStream->println(seconds);
-					//							NMEA0183HandlersDebugStream->print("COG="); NMEA0183HandlersDebugStream->print(COG/10); NMEA0183HandlersDebugStream->print("."); NMEA0183HandlersDebugStream->println(COG % 10);
-					//							NMEA0183HandlersDebugStream->print("SOG="); NMEA0183HandlersDebugStream->print(SOG/10); NMEA0183HandlersDebugStream->print("."); NMEA0183HandlersDebugStream->println(SOG % 10);
-					//							NMEA0183HandlersDebugStream->print("HDG="); NMEA0183HandlersDebugStream->println(HDG);
-					//							NMEA0183HandlersDebugStream->print("ROT="); NMEA0183HandlersDebugStream->println(ROT);
-					//							NMEA0183HandlersDebugStream->print("navstatus="); NMEA0183HandlersDebugStream->println(navstatus);
-					NMEA0183HandlersDebugStream->print("shipname="); NMEA0183HandlersDebugStream->println(shipname);
+					NMEA0183HandlersDebugStream->print("Failed to parse VDM/VDO, pkgCnt=");
+					NMEA0183HandlersDebugStream->print(pkgCnt);
+					NMEA0183HandlersDebugStream->print(", msgNumeric=");
+					NMEA0183HandlersDebugStream->println(msgNumeric);
 				}
-
-				if ((msgNumeric == 1) || (msgNumeric == 2) || (msgNumeric == 3)) {
-					// 129038 AIS Class A Position Report			AIS VHF messages 1, 2 and 3
-					SetN2kPGN129038(N2kMsg, seqMessageId, static_cast<tN2kAISRepeat>(repeat), mmsi, LAT / 600000L, LONG / 600000L,
-						accuracy, raim, seconds, COG*degToRad / 10, SOG*knToms / 10, HDG*degToRad / 10, ROT*degToRad / 10, static_cast<tN2kAISNavStatus>(navstatus));
-					pNMEA2000->SendMsg(N2kMsg);
-				}
-				else if (msgNumeric == 5) {
-					// 129794 AIS Class A Static+Voyage Rel Data	AIS VHF message 5
-//					SetN2kPGN129794(N2kMsg, seqMessageId, static_cast<tN2kAISRepeat>(repeat), mmsi, /* uint32_t UserID*/ 
-//						uint32_t IMOnumber, char *Callsign, char *Name, uint8_t VesselType, double Length,
-//						double Beam, double PosRefStbd, double PosRefBow, uint16_t ETAdate, double ETAtime,
-//						double Draught, char *Destination, tN2kAISVersion AISversion, tN2kGNSStype GNSStype,
-//						tN2kAISDTE DTE, tN2kAISTranceiverInfo AISinfo);
-//					pNMEA2000->SendMsg(N2kMsg);
-				}
-				else if (msgNumeric == 18) {
-					// 129039 AIS Class B Position Report			AIS VHF message 18
-					SetN2kPGN129039(N2kMsg, seqMessageId, static_cast<tN2kAISRepeat>(repeat), mmsi, /* uint32_t UserID*/ LAT / 600000L, LONG / 600000L,
-						accuracy, raim, seconds, COG*degToRad / 10, SOG*knToms / 10, HDG, (tN2kAISUnit)0, /* tN2kAISUnit Unit*/ false, false, false, false, /* bool Display, bool DSC, bool Band,	bool Msg22*/
-						(tN2kAISMode)0, false /* bool State*/);
-					pNMEA2000->SendMsg(N2kMsg);
-				}
-				else if (msgNumeric == 24) {
-					// 129809 AIS Class B "CS" Static Data, Part A	AIS VHF message 24
-					// 129810 AIS Class B "CS" Static Data, Part B	AIS VHF message 24
-					SetN2kPGN129809(N2kMsg, msgType, static_cast<tN2kAISRepeat>(repeat), mmsi, shipname);
-					pNMEA2000->SendMsg(N2kMsg);
-//					SetN2kPGN129810(N2kMsg, msgType, static_cast<tN2kAISRepeat>(repeat), mmsi, uint8_t VesselType, char *Vendor, char *Callsign, double Length, double Beam,
-//						double PosRefStbd, double PosRefBow, uint32_t MothershipID);
-//					pNMEA2000->SendMsg(N2kMsg);
-				}
-				else if (NMEA0183HandlersDebugStream != 0) { NMEA0183HandlersDebugStream->print("msgNumeric="); NMEA0183HandlersDebugStream->println(msgNumeric); }
+				return;
 			}
+
+
+/*
+			if (NMEA0183HandlersDebugStream != 0) {
+				NMEA0183HandlersDebugStream->print("msgType="); NMEA0183HandlersDebugStream->println(msgType);
+				NMEA0183HandlersDebugStream->print("msgNumeric="); NMEA0183HandlersDebugStream->println(msgNumeric);
+				NMEA0183HandlersDebugStream->print("repeat="); NMEA0183HandlersDebugStream->println(repeat);
+				NMEA0183HandlersDebugStream->print("mmsi="); NMEA0183HandlersDebugStream->println(mmsi);
+				NMEA0183HandlersDebugStream->print("LAT="); printDegrees(LAT);
+				NMEA0183HandlersDebugStream->print("LONG="); printDegrees(LONG);
+				NMEA0183HandlersDebugStream->print("accuracy="); NMEA0183HandlersDebugStream->println(accuracy);
+				NMEA0183HandlersDebugStream->print("raim="); NMEA0183HandlersDebugStream->println(raim);
+				NMEA0183HandlersDebugStream->print("seconds="); NMEA0183HandlersDebugStream->println(seconds);
+				NMEA0183HandlersDebugStream->print("COG="); NMEA0183HandlersDebugStream->print(COG/10); NMEA0183HandlersDebugStream->print("."); NMEA0183HandlersDebugStream->println(COG % 10);
+				NMEA0183HandlersDebugStream->print("SOG="); NMEA0183HandlersDebugStream->print(SOG/10); NMEA0183HandlersDebugStream->print("."); NMEA0183HandlersDebugStream->println(SOG % 10);
+				NMEA0183HandlersDebugStream->print("HDG="); NMEA0183HandlersDebugStream->println(HDG);
+				NMEA0183HandlersDebugStream->print("ROT="); NMEA0183HandlersDebugStream->println(ROT);
+				NMEA0183HandlersDebugStream->print("navstatus="); NMEA0183HandlersDebugStream->println(navstatus);
+				NMEA0183HandlersDebugStream->print("shipname="); NMEA0183HandlersDebugStream->println(shipname);
+			}
+*/
+
+			if ((msgNumeric == 1) || (msgNumeric == 2) || (msgNumeric == 3)) {
+				// 129038 AIS Class A Position Report			AIS VHF messages 1, 2 and 3
+//				if (NMEA0183HandlersDebugStream != 0) { NMEA0183HandlersDebugStream->print("msgNumeric="); NMEA0183HandlersDebugStream->println(msgNumeric); }
+
+				SetN2kPGN129038(N2kMsg, seqMessageId, static_cast<tN2kAISRepeat>(repeat), mmsi, LAT/600000L, LONG/600000L,
+					accuracy, raim, seconds, COG*degToRad/10, SOG*knToms/10, HDG*degToRad/10, ROT*degToRad/10, static_cast<tN2kAISNavStatus>(navstatus));
+				pNMEA2000->SendMsg(N2kMsg);
+			}
+			else if (msgNumeric == 5) {
+				// 129794 AIS Class A Static+Voyage Rel Data	AIS VHF message 5
+				if (NMEA0183HandlersDebugStream != 0) { NMEA0183HandlersDebugStream->print("msgNumeric="); NMEA0183HandlersDebugStream->println(msgNumeric); }
+
+				SetN2kPGN129794(N2kMsg, seqMessageId, static_cast<tN2kAISRepeat>(repeat), mmsi, 0, /*uint32_t IMOnumber,*/ "DOLD", /*char *Callsign,*/ "test", /*char *Name,*/
+					70, /*uint8_t VesselType,*/ 100, /*double Length,*/	12, /*double Beam,*/ 2, /*double PosRefStbd,*/ 3, /*double PosRefBow,*/ 0, /*uint16_t ETAdate,*/ 0, /*double ETAtime,*/
+					4, /*double Draught,*/ "Athen", /*char *Destination,*/ N2kaisv_ITU_R_M_1371_1, /*tN2kAISVersion AISversion,*/ N2kGNSSt_GPS, /*tN2kGNSStype GNSStype,*/
+					N2kaisdte_Ready, /*tN2kAISDTE DTE,*/ N2kaisti_Channel_A_VDL_reception /*tN2kAISTranceiverInfo AISinfo*/);
+				pNMEA2000->SendMsg(N2kMsg);
+			}
+			else if (msgNumeric == 18) {
+				// 129039 AIS Class B Position Report			AIS VHF message 18
+				if (NMEA0183HandlersDebugStream != 0) { NMEA0183HandlersDebugStream->print("msgNumeric="); NMEA0183HandlersDebugStream->println(msgNumeric); }
+
+				SetN2kPGN129039(N2kMsg, seqMessageId, static_cast<tN2kAISRepeat>(repeat), mmsi, /* uint32_t UserID*/ LAT/600000L, LONG/600000L,
+					accuracy, raim, seconds, COG*degToRad/10, SOG*knToms/10, HDG, (tN2kAISUnit)0, /* tN2kAISUnit Unit*/ false, false, false, false, /* bool Display, bool DSC, bool Band, bool Msg22*/
+					N2kaismode_Autonomous, /*tN2kAISMode Mode*/ false /* bool State*/);
+				pNMEA2000->SendMsg(N2kMsg);
+			}
+			else if (msgNumeric == 24) {
+				// 129809 AIS Class B "CS" Static Data, Part A	AIS VHF message 24
+				// 129810 AIS Class B "CS" Static Data, Part B	AIS VHF message 24
+				if (NMEA0183HandlersDebugStream != 0) { NMEA0183HandlersDebugStream->print("msgNumeric="); NMEA0183HandlersDebugStream->println(msgNumeric); }
+
+				SetN2kPGN129809(N2kMsg, msgType, static_cast<tN2kAISRepeat>(repeat), mmsi, "Test" /* char *Name */);
+				pNMEA2000->SendMsg(N2kMsg);
+				SetN2kPGN129810(N2kMsg, msgType, static_cast<tN2kAISRepeat>(repeat), mmsi, 0, /*uint8_t VesselType,*/ "em-trak A100", /*char *Vendor,*/ "DOLD", /*char *Callsign,*/ 
+					13, 4, /*double Length, double Beam,*/ 0, /*double PosRefStbd,*/ 0, /*double PosRefBow,*/ 0 /*uint32_t MothershipID*/);
+				pNMEA2000->SendMsg(N2kMsg);
+			}
+			else if (NMEA0183HandlersDebugStream != 0) { NMEA0183HandlersDebugStream->print("msgNumeric, no N2K msg="); NMEA0183HandlersDebugStream->println(msgNumeric); }
 		}
-		else if (NMEA0183HandlersDebugStream != 0) { NMEA0183HandlersDebugStream->println("Failed to parse VDM"); }
 	}
+	else if (NMEA0183HandlersDebugStream != 0) { NMEA0183HandlersDebugStream->println("Failed to parse VDM/VDO"); }
 }
-
-
-
-

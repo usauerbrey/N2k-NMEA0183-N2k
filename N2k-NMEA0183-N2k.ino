@@ -131,12 +131,14 @@ void setup() {
   pinMode(ledBuiltin, OUTPUT);
   pinMode(ledFront, OUTPUT);
 
-while (!Serial);                    // wait until serial ready
+/*
+  while (!Serial);                    // wait until serial ready
   Serial.begin(115200);
   OutputStream = &Serial;
 
   // serial init; only be needed if serial control is used 
-  Serial.println("Testoutput");
+  Serial.println("N2k-ver1.0");
+*/
 }
 
 // *****************************************************************************
