@@ -450,8 +450,6 @@ void AIS::get_string(char* str, unsigned start, unsigned cnt)
 		start += charlen;
 	}
 	str[i] = '\0';
-//	Serial.print("get_string:");
-//	Serial.println(str);
 }
 
 
@@ -460,7 +458,6 @@ char* AIS::get_string(enum AIS::Nmea0183AisParams param, char* str)
 {
 	unsigned int start;
 	if (! getParamStart(param, start)) {
-//		Serial.println("AIS::get_string:");
 		str[0] = '\0';
 		return NULL;
 	}

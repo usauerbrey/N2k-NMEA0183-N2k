@@ -131,14 +131,14 @@ void setup() {
   pinMode(ledBuiltin, OUTPUT);
   pinMode(ledFront, OUTPUT);
 
-/*
-  while (!Serial);                    // wait until serial ready
-  Serial.begin(115200);
-  OutputStream = &Serial;
+
+//  while (!Serial);                    // wait until serial ready
+//  Serial.begin(115200);
+//  OutputStream = &Serial;
 
   // serial init; only be needed if serial control is used 
-  Serial.println("N2k-ver1.0");
-*/
+//  Serial.println("N2k-ver1.0");
+
 }
 
 // *****************************************************************************
@@ -162,7 +162,7 @@ void loop() {
 // *****************************************************************************
 
 #define ledFrontUpdatePeriod   1000
-#define ledBuiltinUpdatePeriod 1500
+#define ledBuiltinUpdatePeriod 3000
 
 void ledFrontUpdate() {
 	static unsigned long ledFrontUpdated = millis();
@@ -184,6 +184,7 @@ void ledBuiltinUpdate() {
 		digitalWrite(ledBuiltin, HIGH);    //LED=on
 		delay(100);
 		digitalWrite(ledBuiltin, LOW);     //LED=off
+//		Serial.println("ledBuiltinUpdate()");
 	}
 }
 #define TimeUpdatePeriod 1000

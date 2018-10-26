@@ -42,7 +42,6 @@ double DoubleToddmm(double val) {
 
 void tN2kDataToNMEA0183::HandleMsg(const tN2kMsg &N2kMsg) {
   if (N2kHandlersDebugStream != 0) { N2kHandlersDebugStream->print("N2k message parsed: "); N2kHandlersDebugStream->println(N2kMsg.PGN); }
-/*
   switch (N2kMsg.PGN) {
     case 127250UL: HandleHeading(N2kMsg);    // -> HDG
     case 127258UL: HandleVariation(N2kMsg);  // store variation
@@ -50,10 +49,9 @@ void tN2kDataToNMEA0183::HandleMsg(const tN2kMsg &N2kMsg) {
     case 128267UL: HandleDepth(N2kMsg);      // -> DBT
     case 129025UL: HandlePosition(N2kMsg);   // -> GLL
     case 129026UL: HandleCOGSOG(N2kMsg);     // -> VTG
-//    case 129029UL: HandleGNSS(N2kMsg);       // -> GGA, GLL
+    case 129029UL: HandleGNSS(N2kMsg);       // -> GGA, GLL
 	case 130306UL: HandleWindSpeed(N2kMsg);  // -> MWV
   }
-*/
 }
 
 /*
@@ -304,11 +302,6 @@ tNMEA0183Msg NMEA0183Msg;
 		N2kHandlersDebugStream->print(Latitude,8);
 		N2kHandlersDebugStream->print(" ");
 		N2kHandlersDebugStream->println(Longitude,8);
-
-		N2kHandlersDebugStream->print("Pos from 129025: ");
-		N2kHandlersDebugStream->print(DoubleToddmm(Latitude), 8);
-		N2kHandlersDebugStream->print(" ");
-		N2kHandlersDebugStream->println(DoubleToddmm(Longitude), 8);
 	}
 	if (NMEA0183SetGLL(NMEA0183Msg, NMEA0183DoubleNA, Latitude, Longitude, 0)) {
 		SendMessage(NMEA0183Msg);
