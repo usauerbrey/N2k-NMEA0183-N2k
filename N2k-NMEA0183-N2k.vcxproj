@@ -69,14 +69,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\N2k-NMEA0183-N2k;$(ProjectDir)..\libraries\NMEA2000\src;$(ProjectDir)..\libraries\NMEA0183;$(ProjectDir)..\libraries\FlexCAN_Library;$(ProjectDir)..\libraries\NMEA2000_teensy;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\libraries;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\teensy\avr\libraries;$(ProjectDir)..\libraries;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\avr;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\util;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\tools\arm\arm-none-eabi\include;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\tools\arm\lib\gcc\arm-none-eabi\5.4.1\include;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\teensy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\N2k-NMEA0183-N2k;$(ProjectDir)..\libraries\NMEA2000\src;$(ProjectDir)..\libraries\NMEA0183;$(ProjectDir)..\libraries\NMEA2000_teensy;$(ProjectDir)..\libraries\FlexCAN_Library;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\libraries\MemoryFree;$(ProjectDir)..\libraries\TeensyView\src;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\teensy\avr\libraries\SPI;$(ProjectDir)..\libraries\AIS;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\avr;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\util;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\tools\arm\arm-none-eabi\include;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\tools\arm\lib\gcc\arm-none-eabi\5.4.1\include;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\tools\arm\arm-none-eabi\include\c++\5.4.1;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\tools\arm\arm-none-eabi\include\c++\5.4.1\tr1;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\tools\arm\arm-none-eabi\include\c++\5.4.1\bits;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\tools\arm\arm-none-eabi\include\c++\5.4.1\arm-none-eabi;$(ProjectDir)..\include\NMEA-Files;$(ProjectDir)..\..\..\..\UWESAU~1\DOCUME~1\Arduino\N2K-NM~1;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\hardware\teensy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(ProjectDir)__vm\.N2k-NMEA0183-N2k.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>__HARDWARE_MK20dx256__;__HARDWARE_MK20DX256__;__MK20DX256__;TEENSYDUINO=141;ARDUINO=10805;F_CPU=96000000;USB_SERIAL;LAYOUT_US_ENGLISH;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__HARDWARE_mk20dx256__;__HARDWARE_MK20DX256__;__MK20DX256__;TEENSYDUINO=141;ARDUINO=10805;F_CPU=96000000;USB_SERIAL;LAYOUT_US_ENGLISH;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -102,26 +101,24 @@
     <ProjectCapability Include="VisualMicro" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="cpp.hint" />
     <None Include="N2k-NMEA0183-N2k.ino">
       <FileType>CppCode</FileType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AIS.h" />
-    <ClInclude Include="BoatData.h">
-      <FileType>CppCode</FileType>
-    </ClInclude>
-    <ClInclude Include="N2kDataToNMEA0183.h" />
-    <ClInclude Include="NMEA0183Handlers.h">
-      <FileType>CppCode</FileType>
-    </ClInclude>
-    <ClInclude Include="__vm\.N2k-NMEA0183-N2k.vsarduino.h" />
+    <ClInclude Include="..\include\NMEA-Files\BoatData.h" />
+    <ClInclude Include="..\include\NMEA-Files\index_html.h" />
+    <ClInclude Include="..\include\NMEA-Files\List.h" />
+    <ClInclude Include="..\include\NMEA-Files\Log.h" />
+    <ClInclude Include="..\include\NMEA-Files\N2kDataToNMEA0183.h" />
+    <ClInclude Include="..\include\NMEA-Files\NMEA0183Handlers.h" />
+    <ClInclude Include="..\include\NMEA-Files\PrintfWrapper.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AIS.cpp" />
-    <ClCompile Include="N2kDataToNMEA0183.cpp" />
-    <ClCompile Include="NMEA0183Handlers.cpp" />
+    <ClCompile Include="..\include\NMEA-Files\Log.cpp" />
+    <ClCompile Include="..\include\NMEA-Files\N2kDataToNMEA0183.cpp" />
+    <ClCompile Include="..\include\NMEA-Files\NMEA0183Handlers.cpp" />
+    <ClCompile Include="..\include\NMEA-Files\PrintfWrapper.cpp" />
   </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>

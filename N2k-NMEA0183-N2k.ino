@@ -45,34 +45,58 @@
 #include "NMEA0183Handlers.h"
 #include "N2kDataToNMEA0183.h"
 #include "BoatData.h"
-
+#include "Log.h"
 #include <NMEA2000_CAN.h>  // This will automatically choose right CAN library and create suitable NMEA2000 object
 
+#include <MemoryFree.h>
+#include <TeensyView.h>    // Include the SFE_TeensyView library
+
+///////////////////////////////////
+// TeensyView Object Declaration //
+///////////////////////////////////
+//Standard
+#define PIN_RESET 15
+#define PIN_DC    5
+#define PIN_CS    10
+#define PIN_SCK   13
+#define PIN_MOSI  11
+
+TeensyView oled(PIN_RESET, PIN_DC, PIN_CS, PIN_SCK, PIN_MOSI);
+
 tBoatData BoatData;
+Logger* logger;
 
-#define NMEA0183_In_Stream_Speed 19200
-//#define NMEA0183_In_Stream Serial3
-#define NMEA0183_In_Stream Serial
-#define NMEA0183_Out_Stream_Speed 115200
-#define NMEA0183_Out_Stream SerialUSB
-#define N2kForward_Stream_Speed 115200
-#define N2kForward_Stream Serial 
-#define N2kdebug_Stream Serial 
+#define NMEA0183_Stream_Speed 38400
+#define NMEA0183_Stream Serial            // USB im Teensy
+#define NMEA0183_1_Stream_Speed 38400
+#define NMEA0183_1_Stream Serial1         // USB an TX1/RX1
+//#define NMEA0183_3_Stream_Speed 38400
+//#define NMEA0183_3_Stream Serial3         // RS232 an TX3/RX3
 
-Stream *OutputStream;
+#define N2kForward_Stream_Speed 38400
+#define N2kForward_Stream Serial1
+
+//Stream* N2kHandlersDebugStream = &Serial;
+//Stream* N2kHandlersDebugStream = &Serial1;
+Stream* N2kHandlersDebugStream = 0;                //                to switch off, set to 0
+
+//Stream* NMEA0183HandlersDebugStream = &Serial;
+//Stream* NMEA0183HandlersDebugStream = &Serial1;
+Stream* NMEA0183HandlersDebugStream = 0;           //                to switch off, set to 0
 
 const int ledBuiltin = LED_BUILTIN;
-const int ledFront = 21;              // front LED
 
-tNMEA0183 NMEA0183_In;
-tNMEA0183 NMEA0183_Out;
+tNMEA0183 NMEA0183;
+tNMEA0183 NMEA0183_1;
+//tNMEA0183 NMEA0183_3;
+
 
 // Set the information for other bus devices, which messages we support
 const unsigned long TransmitMessages[] PROGMEM={126992L,127250L,127258L,129026L,129029L,0};    // System Time, Vessel Heading, Magnetic Variation, COG & SOG, Rapid Update, GNSS Position Data 
 const unsigned long ReceiveMessages[] PROGMEM={130306L,0};                                     // Wind Data 
 
 // NMEA 2000 handlers
-tN2kDataToNMEA0183 N2kDataToNMEA0183(&NMEA2000, &NMEA0183_Out);
+tN2kDataToNMEA0183 N2kDataToNMEA0183(&NMEA2000, &NMEA0183);
 
 // *****************************************************************************
 // Empty stream input buffer. Ports may get stuck, if they get data in and it will
@@ -81,38 +105,71 @@ void FlushStreamInput(Stream &stream) {
   while ( stream.available() ) stream.read();
 }
 
+unsigned long NMEA0183TxCounter = 0;
+unsigned long NMEA0183RxCounter = 0;
+unsigned long N2kTxCounter = 0;
+unsigned long N2kRxCounter = 0;
+
+unsigned long LoopCounter = 0;
+
+static char line[] = "                ";
+
 // *****************************************************************************
 void setup() {
+	oled.begin();    // Initialize the OLED
+	oled.flipVertical(false);
+	oled.flipHorizontal(false);
+	oled.clear(ALL); // Clear the display's internal memory
+	oled.display();  // Display what's in the buffer (splashscreen)
+	delay(3000);     // Delay 1000 ms
+	oled.clear(PAGE); // Clear the buffer.
+
   // Setup NMEA2000 system
-  #ifdef N2kForward_Stream
   N2kForward_Stream.begin(N2kForward_Stream_Speed);
-  #endif
-  NMEA0183_In_Stream.begin(NMEA0183_In_Stream_Speed);
-  NMEA0183_Out_Stream.begin(NMEA0183_Out_Stream_Speed);
+
+  NMEA0183_Stream.begin(NMEA0183_Stream_Speed);
+  NMEA0183_1_Stream.begin(NMEA0183_1_Stream_Speed);
+  //NMEA0183_3_Stream.begin(NMEA0183_3_Stream_Speed);
+
   delay(1000); // Give some time for serial to initialize
 
-  #ifdef N2kForward_Stream
-  NMEA2000.SetForwardStream(&N2kForward_Stream);
-  #endif
-  NMEA2000.SetProductInformation("00000008", // Manufacturer's Model serial code
-                                 107, // Manufacturer's product code
-                                 "N2k->NMEA0183->N2k->PC",  // Manufacturer's Model ID
-                                 "N2k->NMEA0183->N2k->PC",  // Manufacturer's Software version code
-                                 "1.10 (2018-10-19)" // Manufacturer's Model version
-                                 );
-  // Det device information
-  NMEA2000.SetDeviceInformation(8, // Unique number. Use e.g. Serial number.
-                                130, // Device function=PC Gateway. See codes on http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20%26%20function%20codes%20v%202.00.pdf
-                                25, // Device class=Inter/Intranetwork Device. See codes on http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20%26%20function%20codes%20v%202.00.pdf
-                                2046 // Just choosen free from code list on http://www.nmea.org/Assets/20121020%20nmea%202000%20registration%20list.pdf                               
-                               );
+  // to use the can0 with Tindie CAN-Bus Adapter, set High speed mode
+  pinMode(2, OUTPUT);
+  digitalWrite(2, LOW);
 
-  //NMEA2000.SetForwardType(tNMEA2000::fwdt_Text); // Show in clear text. Leave commented for default Actisense format.
- 
-  //NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode,25);
-  NMEA2000.SetMode(tNMEA2000::N2km_NodeOnly, 25);
+  Serial.begin(115200);
+
+  logger = new Logger(&Serial, DEBUG_LEVEL_TRACE);
+
+  info("Start initializing NMEA200 library. Free memory:%u", freeMemory());
+
+
+  NMEA2000.SetForwardStream(&N2kForward_Stream);
+  NMEA2000.SetProductInformation("0000042",             // Manufacturer's Model serial code
+                                 107,                   // Manufacturer's product code
+                                 "Teensy V3.2",         // Manufacturer's Model ID
+                                 "1.40 (2019-08-02)",   // Manufacturer's Software version code
+                                 "N2k->NMEA0183->N2K"); // Manufacturer's Model version
+
+// Det device information
+  NMEA2000.SetDeviceInformation(42,    // Unique number. Use e.g. Serial number.
+                                130,   // Device function=PC Gateway. See codes on http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20%26%20function%20codes%20v%202.00.pdf
+                                25,    // Device class=Inter/Intranetwork Device. See codes on http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20%26%20function%20codes%20v%202.00.pdf
+                                2046); // Just choosen free from code list on http://www.nmea.org/Assets/20121020%20nmea%202000%20registration%20list.pdf                               
   
-  NMEA2000.EnableForward(false);             // Forward N2K MSG to serial Port additionally to N2K-Bus, Format see SetForwardType above
+
+//  NMEA2000.SetDeviceInformation(13333, // Unique number. Poduct code
+//								130,     // Device function=Display Device. See codes on http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20%26%20function%20codes%20v%202.00.pdf
+//								120,     // Device class=Display Device. See codes on http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20%26%20function%20codes%20v%202.00.pdf
+//								1851);   // Manufacturer=Raymarine. See codes on http://www.nmea.org/Assets/20121020%20nmea%202000%20registration%20list.pdf                               
+
+  //NMEA2000.SetForwardType(tNMEA2000::fwdt_Text); // Show in clear text. Commented means show in Actisense format.
+ 
+  NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode,25);
+  //NMEA2000.SetMode(tNMEA2000::N2km_NodeOnly, 25);
+  
+  NMEA2000.EnableForward(true);               // Forward N2K MSGs to serial Port additionally to N2K-Bus, Format see SetForwardType above
+  //NMEA2000.EnableForward(false);                // do not Forward N2K MSGs to serial Port additionally to N2K-Bus, Format see SetForwardType above
 
   NMEA2000.ExtendTransmitMessages(TransmitMessages);
   NMEA2000.ExtendReceiveMessages(ReceiveMessages);
@@ -121,60 +178,64 @@ void setup() {
 
   // Setup NMEA0183 ports and handlers
   InitNMEA0183Handlers(&NMEA2000, &BoatData);
-  NMEA0183_In.SetMsgHandler(HandleNMEA0183Msg);
+  NMEA0183.SetMsgHandler(HandleNMEA0183Msg);
+  NMEA0183_1.SetMsgHandler(HandleNMEA0183Msg);
+  //NMEA0183_3.SetMsgHandler(HandleNMEA0183Msg);
 
-  NMEA0183_In.SetMessageStream(&NMEA0183_In_Stream);
-  NMEA0183_In.Open();
-  NMEA0183_Out.SetMessageStream(&NMEA0183_Out_Stream);
-  NMEA0183_Out.Open();
-  
+  NMEA0183.SetMessageStream(&NMEA0183_Stream);
+  NMEA0183.Open();
+  NMEA0183_1.SetMessageStream(&NMEA0183_1_Stream);
+  NMEA0183_1.Open();
+  //NMEA0183_3.SetMessageStream(&NMEA0183_3_Stream);
+  //NMEA0183_3.Open();
+
   pinMode(ledBuiltin, OUTPUT);
-  pinMode(ledFront, OUTPUT);
-
 
 //  while (!Serial);                    // wait until serial ready
-//  Serial.begin(115200);
+//  Serial.begin(NMEA0183_Stream_Speed);
 //  OutputStream = &Serial;
+  Serial.println("N2k-ver1.0-USB buildtin");
 
-  // serial init; only be needed if serial control is used 
-//  Serial.println("N2k-ver1.0");
+//  Serial1.begin(NMEA0183_1_Stream_Speed);
+//  Output1Stream = &Serial1;
+  Serial1.println("N2k-ver1.0-USB ext");
 
+//  Serial3.begin(NMEA0183_3_Stream_Speed);
+//  Output3Stream = &Serial3;
+//  Serial3.println("N2k-ver1.0-RS232");
 }
 
 // *****************************************************************************
 void loop() {
   NMEA2000.ParseMessages();
   N2kDataToNMEA0183.Update();
-  NMEA0183_In.ParseMessages();
-  NMEA0183_Out.ParseMessages();
+
+  NMEA0183.ParseMessages();
   // We need to clear output streams input data to avoid them to get stuck.
-  FlushStreamInput(NMEA0183_Out_Stream);
+  FlushStreamInput(NMEA0183_Stream);
+
+  NMEA0183_1.ParseMessages();
+  // We need to clear output streams input data to avoid them to get stuck.
+  FlushStreamInput(NMEA0183_1_Stream);
+
+ // NMEA0183_3.ParseMessages();
+  // We need to clear output streams input data to avoid them to get stuck.
+ // FlushStreamInput(NMEA0183_3_Stream);
+
   #ifdef N2kForward_Stream
   FlushStreamInput(N2kForward_Stream);
   #endif
   
   //SendSystemTime();
 
-  ledFrontUpdate();
   ledBuiltinUpdate();
+
+  LoopCount();
 }
 
 // *****************************************************************************
 
-#define ledFrontUpdatePeriod   1000
-#define ledBuiltinUpdatePeriod 3000
-
-void ledFrontUpdate() {
-	static unsigned long ledFrontUpdated = millis();
-
-	if (ledFrontUpdated + ledFrontUpdatePeriod < millis()) {
-		ledFrontUpdated = millis();
-		digitalWrite(ledFront, HIGH);    //LED=on
-		delay(100);
-		digitalWrite(ledFront, LOW);     //LED=off
-	}
-}
-
+#define ledBuiltinUpdatePeriod 2000
 
 void ledBuiltinUpdate() {
 	static unsigned long ledBuiltinUpdated = millis();
@@ -184,20 +245,64 @@ void ledBuiltinUpdate() {
 		digitalWrite(ledBuiltin, HIGH);    //LED=on
 		delay(100);
 		digitalWrite(ledBuiltin, LOW);     //LED=off
-//		Serial.println("ledBuiltinUpdate()");
+		//Serial.println("Serial: ledBuiltinUpdate()");
+		Serial1.println("Serial_1: ledBuiltinUpdate()");
+//		Serial3.println("Serial_3: ledBuiltinUpdate()");
 	}
 }
-#define TimeUpdatePeriod 1000
 
-/*
-void SendSystemTime() {
-  static unsigned long TimeUpdated=millis();
-  tN2kMsg N2kMsg;
+#define LoopCountUpdatePeriod 1000
 
-  if ( (TimeUpdated+TimeUpdatePeriod<millis()) && BoatData.DaysSince1970>0 ) {
-	SetN2kSystemTime(N2kMsg, 0, BoatData.DaysSince1970, BoatData.GPSTime);       // PGN126992: System Time
-    TimeUpdated=millis();
-    NMEA2000.SendMsg(N2kMsg);
-  }
+void LoopCount() {
+	static unsigned long LoopCountUpdated = millis();
+
+	if (LoopCountUpdated + LoopCountUpdatePeriod < millis()) {
+		LoopCountUpdated = millis();
+
+		LoopCounter = LoopCounter + 1;
+		//Serial.println("LoopCount()");
+
+		oled.clear(PAGE);            // Clear the display
+		oled.setFontType(0);         // Smallest font
+
+		oled.setCursor(0, 0);        // Set cursor to top-left
+		sprintf(line, "Loop: %d", (int)LoopCounter);
+		oled.println(line);
+//		oled.print("Loop: ");
+//		oled.print(LoopCounter);
+
+		oled.setCursor(0, 0);        // Set cursor to top-left
+		sprintf(line, "NMEA0183Tx: %9d", (int)NMEA0183TxCounter);
+		oled.println(line);
+
+		oled.setCursor(0, 8);        // Set cursor to top-middle-left
+		sprintf(line, "NMEA0183Rx: %9d", (int)NMEA0183RxCounter);
+		oled.println(line);
+
+		oled.setCursor(0, 16);       // Set cursor to top-middle-left
+		sprintf(line, "NMEA2000Tx: %9d", (int)N2kTxCounter);
+		oled.println(line);
+
+		oled.setCursor(0, 24);       // Set cursor to top-middle-left
+		sprintf(line, "NMEA2000Rx: %9d", (int)N2kRxCounter);
+		oled.println(line);
+
+		oled.display();
+	}
 }
-*/
+
+#define TimeUpdatePeriod 5000
+
+void SendSystemTime() {
+	static unsigned long TimeUpdated=millis();
+	tN2kMsg N2kMsg;
+
+//	if ( (TimeUpdated+TimeUpdatePeriod<millis()) && BoatData.DaysSince1970>0 ) {
+	if (TimeUpdated + TimeUpdatePeriod < millis()) {
+		Serial.println("SendSystemTime()");
+		SetN2kSystemTime(N2kMsg, 0, BoatData.DaysSince1970, BoatData.GPSTime);       // PGN126992: System Time
+		TimeUpdated=millis();
+		NMEA2000.SendMsg(N2kMsg);
+		N2kTxCounter = N2kTxCounter + 1;
+	}
+}
