@@ -117,11 +117,11 @@ static char line[] = "                ";
 // *****************************************************************************
 void setup() {
 	oled.begin();    // Initialize the OLED
-	oled.flipVertical(false);
-	oled.flipHorizontal(false);
-	oled.clear(ALL); // Clear the display's internal memory
-	oled.display();  // Display what's in the buffer (splashscreen)
-	delay(3000);     // Delay 1000 ms
+	//oled.flipVertical(false);
+	//oled.flipHorizontal(false);
+	//oled.clear(ALL); // Clear the display's internal memory
+	//oled.display();  // Display what's in the buffer (splashscreen)
+	//delay(3000);     // Delay 1000 ms
 	oled.clear(PAGE); // Clear the buffer.
 
   // Setup NMEA2000 system
@@ -245,7 +245,7 @@ void ledBuiltinUpdate() {
 		digitalWrite(ledBuiltin, HIGH);    //LED=on
 		delay(100);
 		digitalWrite(ledBuiltin, LOW);     //LED=off
-		//Serial.println("Serial: ledBuiltinUpdate()");
+		Serial.println("Serial: ledBuiltinUpdate()");
 		Serial1.println("Serial_1: ledBuiltinUpdate()");
 //		Serial3.println("Serial_3: ledBuiltinUpdate()");
 	}
