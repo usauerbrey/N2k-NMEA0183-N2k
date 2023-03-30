@@ -68,12 +68,12 @@ Logger* logger;
 
 #define NMEA0183_Stream_Speed 38400
 #define NMEA0183_Stream Serial            // USB im Teensy
-#define NMEA0183_1_Stream_Speed 38400
+#define NMEA0183_1_Stream_Speed 115200
 #define NMEA0183_1_Stream Serial1         // USB an TX1/RX1
 //#define NMEA0183_3_Stream_Speed 38400
 //#define NMEA0183_3_Stream Serial3         // RS232 an TX3/RX3
 
-#define N2kForward_Stream_Speed 38400
+#define N2kForward_Stream_Speed 115200
 #define N2kForward_Stream Serial1
 
 //Stream* N2kHandlersDebugStream = &Serial;
@@ -245,7 +245,7 @@ void ledBuiltinUpdate() {
 		digitalWrite(ledBuiltin, HIGH);    //LED=on
 		delay(100);
 		digitalWrite(ledBuiltin, LOW);     //LED=off
-		Serial.println("Serial: ledBuiltinUpdate()");
+//		Serial.println("Serial: ledBuiltinUpdate()");
 		Serial1.println("Serial_1: ledBuiltinUpdate()");
 //		Serial3.println("Serial_3: ledBuiltinUpdate()");
 	}
