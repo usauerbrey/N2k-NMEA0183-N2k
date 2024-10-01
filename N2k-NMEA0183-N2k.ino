@@ -48,7 +48,7 @@
 #include "Log.h"
 #include <NMEA2000_CAN.h>  // This will automatically choose right CAN library and create suitable NMEA2000 object
 
-#include <MemoryFree.h>
+//#include <MemoryFree.h>
 #include <TeensyView.h>    // Include the SFE_TeensyView library
 
 ///////////////////////////////////
@@ -117,11 +117,11 @@ static char line[] = "                ";
 // *****************************************************************************
 void setup() {
 	oled.begin();    // Initialize the OLED
-	//oled.flipVertical(false);
-	//oled.flipHorizontal(false);
-	//oled.clear(ALL); // Clear the display's internal memory
-	//oled.display();  // Display what's in the buffer (splashscreen)
-	//delay(3000);     // Delay 1000 ms
+	oled.flipVertical(false);
+	oled.flipHorizontal(false);
+	oled.clear(ALL); // Clear the display's internal memory
+	oled.display();  // Display what's in the buffer (splashscreen)
+	delay(3000);     // Delay 1000 ms
 	oled.clear(PAGE); // Clear the buffer.
 
   // Setup NMEA2000 system
@@ -141,7 +141,7 @@ void setup() {
 
   logger = new Logger(&Serial, DEBUG_LEVEL_TRACE);
 
-  info("Start initializing NMEA200 library. Free memory:%u", freeMemory());
+  //info("Start initializing NMEA200 library. Free memory:%u", freeMemory());
 
 
   NMEA2000.SetForwardStream(&N2kForward_Stream);

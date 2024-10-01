@@ -15,43 +15,50 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="N2k-NMEA0183-N2k.ino" />
+    <ClInclude Include="..\include\NMEA-includes\AIS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\NMEA-includes\BoatData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\NMEA-includes\index_html.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\NMEA-includes\List.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\NMEA-includes\Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\NMEA-includes\N2kDataToNMEA0183.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\NMEA-includes\NMEA0183Handlers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\NMEA-includes\PrintfWrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="__vm\.N2k-NMEA0183-N2k.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\NMEA-Files\BoatData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\NMEA-Files\index_html.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\NMEA-Files\List.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\NMEA-Files\Log.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\NMEA-Files\N2kDataToNMEA0183.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\NMEA-Files\NMEA0183Handlers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\NMEA-Files\PrintfWrapper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\include\NMEA-Files\Log.cpp">
-      <Filter>Resource Files</Filter>
+    <ClCompile Include="..\include\NMEA-includes\AIS.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\NMEA-Files\N2kDataToNMEA0183.cpp">
-      <Filter>Resource Files</Filter>
+    <ClCompile Include="..\include\NMEA-includes\Log.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\NMEA-Files\NMEA0183Handlers.cpp">
-      <Filter>Resource Files</Filter>
+    <ClCompile Include="..\include\NMEA-includes\N2kDataToNMEA0183.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\NMEA-Files\PrintfWrapper.cpp">
-      <Filter>Resource Files</Filter>
+    <ClCompile Include="..\include\NMEA-includes\NMEA0183Handlers.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\include\NMEA-includes\PrintfWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="N2k-NMEA0183-N2k.ino" />
   </ItemGroup>
 </Project>
