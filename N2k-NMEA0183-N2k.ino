@@ -35,7 +35,8 @@
 */
 
 #include <Arduino.h>
-#include <Time.h>
+#include <stdio.h>
+//#include <Time.h>
 #include <N2kMsg.h>
 #include <NMEA2000.h>
 #include <N2kMessages.h>
@@ -116,19 +117,28 @@ static char line[] = "                ";
 
 // *****************************************************************************
 void setup() {
-	oled.begin();    // Initialize the OLED
-	oled.flipVertical(true);
-	oled.flipHorizontal(true);
-	oled.clear(ALL); // Clear the display's internal memory
-	oled.display();  // Display what's in the buffer (splashscreen)
-	delay(3000);     // Delay 1000 ms
-	oled.clear(PAGE); // Clear the buffer.
+/*
+  oled.begin();    // Initialize the OLED
+  oled.flipVertical(true);
+  oled.flipHorizontal(true);
+  oled.clear(ALL); // Clear the display's internal memory
+  oled.display();  // Display what's in the buffer (splashscreen)
+  delay(3000);
+  oled.clear(PAGE); // Clear the buffer.
 
-	oled.setFontType(0);         // Smallest font
-	oled.setCursor(0, 0);        // Set cursor to top-left
-	sprintf(line, "Loop.start: ");
-	oled.println(line);
+  oled.setFontType(0);         // Smallest font
+  oled.setCursor(0, 0);        // Set cursor to top-left
+  sprintf(line, "Loop.start: ");
+  oled.println(line);
+  oled.display();  // Display what's in the buffer
+  delay(5000);
 
+  oled.setCursor(0, 0);        // Set cursor to top-left
+  sprintf(line, "abcdefg: ");
+  oled.println(line);
+  oled.display();  // Display what's in the buffer
+  delay(5000);
+*/
   // Setup NMEA2000 system
   N2kForward_Stream.begin(N2kForward_Stream_Speed);
 
@@ -156,7 +166,7 @@ void setup() {
                                  "1.40 (2019-08-02)",   // Manufacturer's Software version code
                                  "N2k->NMEA0183->N2K"); // Manufacturer's Model version
 
-// Det device information
+  // Det device information
   NMEA2000.SetDeviceInformation(42,    // Unique number. Use e.g. Serial number.
                                 130,   // Device function=PC Gateway. See codes on http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20%26%20function%20codes%20v%202.00.pdf
                                 25,    // Device class=Inter/Intranetwork Device. See codes on http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20%26%20function%20codes%20v%202.00.pdf
@@ -235,7 +245,7 @@ void loop() {
 
   ledBuiltinUpdate();
 
-  LoopCount();
+//  LoopCount();
 }
 
 // *****************************************************************************
@@ -250,9 +260,20 @@ void ledBuiltinUpdate() {
 		digitalWrite(ledBuiltin, HIGH);    //LED=on
 		delay(100);
 		digitalWrite(ledBuiltin, LOW);     //LED=off
-//		Serial.println("Serial: ledBuiltinUpdate()");
-		Serial1.println("Serial_1: ledBuiltinUpdate()");
+
+//		Serial.println ("Serial:   ledBuiltinUpdate()");
+//		Serial1.println("Serial_1: ledBuiltinUpdate()");
 //		Serial3.println("Serial_3: ledBuiltinUpdate()");
+
+/*
+		oled.begin();    // Initialize the OLED
+		oled.flipVertical(true);
+		oled.flipHorizontal(true);
+		oled.clear(PAGE); // Clear the display's internal memory
+		oled.display();  // Display what's in the buffer (splashscreen)
+		oled.print("56789:;<=>?@ABCDEFGHI");
+		oled.display();  // Display what's in the buffer
+*/
 	}
 }
 
@@ -265,34 +286,45 @@ void LoopCount() {
 		LoopCountUpdated = millis();
 
 		LoopCounter = LoopCounter + 1;
-		//Serial.println("LoopCount()");
 
-		oled.clear(PAGE);            // Clear the display
+		oled.begin();    // Initialize the OLED
+		oled.flipVertical(true);
+		oled.flipHorizontal(true);
 		oled.setFontType(0);         // Smallest font
+/*
+		oled.clear(PAGE); // Clear the display's internal memory
+		oled.display();  // Display what's in the buffer (splashscreen)
+		oled.print("56789:;<=>?@ABCDEFGHI");
+		oled.display();  // Display what's in the buffer
+*/		
+//		oled.clear(PAGE);            // Clear the display
 
+/*
 		oled.setCursor(0, 0);        // Set cursor to top-left
-		sprintf(line, "Loop: %d", (int)LoopCounter);
+		sprintf(line, "qaywsxedc: ");
 		oled.println(line);
-		oled.print("Loop: ");
-		oled.print(LoopCounter);
-
+		oled.display();  // Display what's in the buffer
+*/
 		oled.setCursor(0, 0);        // Set cursor to top-left
 		sprintf(line, "NMEA0183Tx: %9d", (int)NMEA0183TxCounter);
 		oled.println(line);
+		oled.display();
 
 		oled.setCursor(0, 8);        // Set cursor to top-middle-left
 		sprintf(line, "NMEA0183Rx: %9d", (int)NMEA0183RxCounter);
 		oled.println(line);
+		oled.display();
 
 		oled.setCursor(0, 16);       // Set cursor to top-middle-left
 		sprintf(line, "NMEA2000Tx: %9d", (int)N2kTxCounter);
 		oled.println(line);
+		oled.display();
 
 		oled.setCursor(0, 24);       // Set cursor to top-middle-left
 		sprintf(line, "NMEA2000Rx: %9d", (int)N2kRxCounter);
 		oled.println(line);
-
 		oled.display();
+
 	}
 }
 
