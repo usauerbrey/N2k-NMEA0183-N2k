@@ -117,12 +117,17 @@ static char line[] = "                ";
 // *****************************************************************************
 void setup() {
 	oled.begin();    // Initialize the OLED
-	oled.flipVertical(false);
-	oled.flipHorizontal(false);
+	oled.flipVertical(true);
+	oled.flipHorizontal(true);
 	oled.clear(ALL); // Clear the display's internal memory
 	oled.display();  // Display what's in the buffer (splashscreen)
 	delay(3000);     // Delay 1000 ms
 	oled.clear(PAGE); // Clear the buffer.
+
+	oled.setFontType(0);         // Smallest font
+	oled.setCursor(0, 0);        // Set cursor to top-left
+	sprintf(line, "Loop.start: ");
+	oled.println(line);
 
   // Setup NMEA2000 system
   N2kForward_Stream.begin(N2kForward_Stream_Speed);
@@ -268,8 +273,8 @@ void LoopCount() {
 		oled.setCursor(0, 0);        // Set cursor to top-left
 		sprintf(line, "Loop: %d", (int)LoopCounter);
 		oled.println(line);
-//		oled.print("Loop: ");
-//		oled.print(LoopCounter);
+		oled.print("Loop: ");
+		oled.print(LoopCounter);
 
 		oled.setCursor(0, 0);        // Set cursor to top-left
 		sprintf(line, "NMEA0183Tx: %9d", (int)NMEA0183TxCounter);
