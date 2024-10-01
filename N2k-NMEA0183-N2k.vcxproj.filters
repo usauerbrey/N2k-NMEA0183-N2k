@@ -42,6 +42,9 @@
     <ClInclude Include="__vm\.N2k-NMEA0183-N2k.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="__vm\.N2k-NMEA0183-N2k.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\include\NMEA-includes\AIS.cpp">
