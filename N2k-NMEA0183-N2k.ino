@@ -36,7 +36,6 @@
 
 #include <Arduino.h>
 #include <stdio.h>
-//#include <Time.h>
 #include <N2kMsg.h>
 #include <NMEA2000.h>
 #include <N2kMessages.h>
@@ -56,34 +55,34 @@
 // TeensyView Object Declaration //
 ///////////////////////////////////
 //Standard
-#define PIN_RESET 15
-#define PIN_DC    5
-#define PIN_CS    10
-#define PIN_SCK   13
-#define PIN_MOSI  11
+constexpr int PIN_RESET = 15;
+constexpr int PIN_DC = 5;
+constexpr int PIN_CS = 10;
+constexpr int PIN_SCK = 13;
+constexpr int PIN_MOSI = 11;
 
 TeensyView oled(PIN_RESET, PIN_DC, PIN_CS, PIN_SCK, PIN_MOSI);
 
 tBoatData BoatData;
 Logger* logger;
 
-#define NMEA0183_Stream_Speed 38400
+constexpr long NMEA0183_Stream_Speed = 38400;
 #define NMEA0183_Stream Serial            // USB im Teensy
-#define NMEA0183_1_Stream_Speed 115200
+constexpr long NMEA0183_1_Stream_Speed = 115200;
 #define NMEA0183_1_Stream Serial1         // USB an TX1/RX1
 //#define NMEA0183_3_Stream_Speed 38400
 //#define NMEA0183_3_Stream Serial3         // RS232 an TX3/RX3
 
-#define N2kForward_Stream_Speed 115200
+constexpr long N2kForward_Stream_Speed = 115200;
 #define N2kForward_Stream Serial1
 
 //Stream* N2kHandlersDebugStream = &Serial;
 //Stream* N2kHandlersDebugStream = &Serial1;
-Stream* N2kHandlersDebugStream = 0;                //                to switch off, set to 0
+Stream* N2kHandlersDebugStream = nullptr;                //                to switch off, set to 0
 
 //Stream* NMEA0183HandlersDebugStream = &Serial;
 //Stream* NMEA0183HandlersDebugStream = &Serial1;
-Stream* NMEA0183HandlersDebugStream = 0;           //                to switch off, set to 0
+Stream* NMEA0183HandlersDebugStream = nullptr;           //                to switch off, set to 0
 
 const int ledBuiltin = LED_BUILTIN;
 
@@ -102,7 +101,7 @@ tN2kDataToNMEA0183 N2kDataToNMEA0183(&NMEA2000, &NMEA0183);
 // *****************************************************************************
 // Empty stream input buffer. Ports may get stuck, if they get data in and it will
 // not be read out.
-void FlushStreamInput(Stream& stream) {
+static void FlushStreamInput(Stream& stream) {
 	while (stream.available()) {
 		stream.read();
 	}
@@ -117,7 +116,7 @@ unsigned long LoopCounter = 0;
 
 static char line[] = "                ";
 
-void initializeOLED() {
+static void initializeOLED() {
 	oled.begin();    // Initialize the OLED
 	oled.flipVertical(true);
 	oled.flipHorizontal(true);
@@ -247,20 +246,20 @@ void loop() {
 	FlushStreamInput(N2kForward_Stream);
 #endif
 
-	//SendSystemTime();
+	SendSystemTime();
 
 	ledBuiltinUpdate();
 
-	//  LoopCount();
+	LoopCount();
 }
 
 /**
  * @brief Update LED state for diagnostics.
  */
 
-#define ledBuiltinUpdatePeriod 2000
+constexpr unsigned long ledBuiltinUpdatePeriod = 2000;
 
-void ledBuiltinUpdate() {
+static void ledBuiltinUpdate() {
 	static unsigned long ledBuiltinUpdated = millis();
 
 	if (ledBuiltinUpdated + ledBuiltinUpdatePeriod < millis()) {
@@ -283,9 +282,9 @@ void ledBuiltinUpdate() {
  * @brief LoopCount.
  */
 
-#define LoopCountUpdatePeriod 1000
+constexpr unsigned long LoopCountUpdatePeriod = 1000;
 
-void LoopCount() {
+static void LoopCount() {
 	static unsigned long LoopCountUpdated = millis();
 
 	if (LoopCountUpdated + LoopCountUpdatePeriod < millis()) {
@@ -331,9 +330,9 @@ void LoopCount() {
  * @brief Send SystemTime.
  */
 
-#define TimeUpdatePeriod 5000
+constexpr unsigned long TimeUpdatePeriod = 5000;
 
-void SendSystemTime() {
+static void SendSystemTime() {
 	static unsigned long TimeUpdated = millis();
 	tN2kMsg N2kMsg;
 
@@ -346,3 +345,4 @@ void SendSystemTime() {
 		N2kTxCounter = N2kTxCounter + 1;
 	}
 }
+
