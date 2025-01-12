@@ -117,18 +117,19 @@ unsigned long LoopCounter = 0;
 
 static char line[] = "                ";
 
+void initializeOLED() {
+	oled.begin();    // Initialize the OLED
+	oled.flipVertical(true);
+	oled.flipHorizontal(true);
+	oled.clear(PAGE); // Clear the display's internal memory
+	oled.display();  // Display what's in the buffer (splashscreen)
+}
+
 /**
  * @brief Initialize hardware and software components.
  */
 void setup() {
-	oled.begin();    // Initialize the OLED
-	oled.flipVertical(true);
-	oled.flipHorizontal(true);
-	oled.clear(ALL); // Clear the display's internal memory
-	oled.display();  // Display what's in the buffer (splashscreen)
-	delay(3000);
-	oled.clear(PAGE); // Clear the buffer.
-
+	initializeOLED();
 	oled.setFontType(0);         // Smallest font
 	oled.setCursor(0, 0);        // Set cursor to top-left
 	sprintf(line, "Loop.start: ");
@@ -272,11 +273,7 @@ void ledBuiltinUpdate() {
 		Serial1.println("Serial_1: ledBuiltinUpdate()");
 		Serial3.println("Serial_3: ledBuiltinUpdate()");
 
-		oled.begin();    // Initialize the OLED
-		oled.flipVertical(true);
-		oled.flipHorizontal(true);
-		oled.clear(PAGE); // Clear the display's internal memory
-		oled.display();  // Display what's in the buffer (splashscreen)
+		initializeOLED();
 		oled.print("56789:;<=>?@ABCDEFGHI");
 		oled.display();  // Display what's in the buffer
 	}
@@ -296,13 +293,7 @@ void LoopCount() {
 
 		LoopCounter = LoopCounter + 1;
 		/*
-				oled.begin();    // Initialize the OLED
-				oled.flipVertical(true);
-				oled.flipHorizontal(true);
-				oled.setFontType(0);         // Smallest font
-
-				oled.clear(PAGE); // Clear the display's internal memory
-				oled.display();  // Display what's in the buffer (splashscreen)
+				initializeOLED();
 				oled.print("56789:;<=>?@ABCDEFGHI");
 				oled.display();  // Display what's in the buffer
 
