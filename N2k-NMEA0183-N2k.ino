@@ -70,7 +70,7 @@ constexpr long NMEA0183_Stream_Speed = 38400;
 #define NMEA0183_Stream Serial            // USB im Teensy
 constexpr long NMEA0183_1_Stream_Speed = 115200;
 #define NMEA0183_1_Stream Serial1         // USB an TX1/RX1
-//#define NMEA0183_3_Stream_Speed 38400
+//constexpr long  NMEA0183_3_Stream_Speed = 38400;
 //#define NMEA0183_3_Stream Serial3         // RS232 an TX3/RX3
 
 constexpr long N2kForward_Stream_Speed = 115200;
@@ -78,11 +78,11 @@ constexpr long N2kForward_Stream_Speed = 115200;
 
 //Stream* N2kHandlersDebugStream = &Serial;
 //Stream* N2kHandlersDebugStream = &Serial1;
-Stream* N2kHandlersDebugStream = nullptr;                //                to switch off, set to 0
+Stream* N2kHandlersDebugStream = nullptr;                //                to switch off, set to nullptr
 
 //Stream* NMEA0183HandlersDebugStream = &Serial;
 //Stream* NMEA0183HandlersDebugStream = &Serial1;
-Stream* NMEA0183HandlersDebugStream = nullptr;           //                to switch off, set to 0
+Stream* NMEA0183HandlersDebugStream = nullptr;           //                to switch off, set to nullptr
 
 const int ledBuiltin = LED_BUILTIN;
 
@@ -131,16 +131,6 @@ void setup() {
 	initializeOLED();
 	oled.setFontType(0);         // Smallest font
 	oled.setCursor(0, 0);        // Set cursor to top-left
-	sprintf(line, "Loop.start: ");
-	oled.println(line);
-	oled.display();  // Display what's in the buffer
-	delay(5000);
-
-	oled.setCursor(0, 0);        // Set cursor to top-left
-	sprintf(line, "abcdefg: ");
-	oled.println(line);
-	oled.display();  // Display what's in the buffer
-	delay(5000);
 
 	// Setup NMEA2000 system
 	N2kForward_Stream.begin(N2kForward_Stream_Speed);
@@ -221,6 +211,10 @@ void setup() {
 	//  Serial3.begin(NMEA0183_3_Stream_Speed);
 	//  Output3Stream = &Serial3;
 	//  Serial3.println("N2k-ver1.0-RS232");
+
+	oled.begin();    // Initialize the OLED
+	oled.flipVertical(true);
+	oled.flipHorizontal(true);
 }
 
 /**
@@ -239,7 +233,7 @@ void loop() {
 	FlushStreamInput(NMEA0183_1_Stream);
 
 	// NMEA0183_3.ParseMessages();
-	 // We need to clear output streams input data to avoid them to get stuck.
+	// We need to clear output streams input data to avoid them to get stuck.
 	// FlushStreamInput(NMEA0183_3_Stream);
 
 #ifdef N2kForward_Stream
@@ -271,10 +265,6 @@ static void ledBuiltinUpdate() {
 		Serial.println ("Serial:   ledBuiltinUpdate()");
 		Serial1.println("Serial_1: ledBuiltinUpdate()");
 		Serial3.println("Serial_3: ledBuiltinUpdate()");
-
-		initializeOLED();
-		oled.print("56789:;<=>?@ABCDEFGHI");
-		oled.display();  // Display what's in the buffer
 	}
 }
 
@@ -291,18 +281,7 @@ static void LoopCount() {
 		LoopCountUpdated = millis();
 
 		LoopCounter = LoopCounter + 1;
-		/*
-				initializeOLED();
-				oled.print("56789:;<=>?@ABCDEFGHI");
-				oled.display();  // Display what's in the buffer
 
-				oled.clear(PAGE);            // Clear the display
-
-				oled.setCursor(0, 0);        // Set cursor to top-left
-				sprintf(line, "qaywsxedc: ");
-				oled.println(line);
-				oled.display();  // Display what's in the buffer
-		*/
 		oled.setCursor(0, 0);        // Set cursor to top-left
 		sprintf(line, "NMEA0183Tx: %9d", (int)NMEA0183TxCounter);
 		oled.println(line);
@@ -322,7 +301,6 @@ static void LoopCount() {
 		sprintf(line, "NMEA2000Rx: %9d", (int)N2kRxCounter);
 		oled.println(line);
 		oled.display();
-
 	}
 }
 
